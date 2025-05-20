@@ -8,9 +8,6 @@ import src.model.Patron;
 import src.repository.BookRepository;
 import src.repository.PatronRepository;
 
-/**
- * Service for managing book lending.
- */
 public class LendingService {
 
     private static final Logger logger = Logger.getLogger(LendingService.class.getName());
@@ -18,21 +15,12 @@ public class LendingService {
     private final BookRepository bookRepo;
     private final PatronRepository patronRepo;
 
-    /**
-     * Creates a new LendingService instance.
-     * @param bookRepo the book repository
-     * @param patronRepo the patron repository
-     */
+  
     public LendingService(BookRepository bookRepo, PatronRepository patronRepo) {
         this.bookRepo = bookRepo;
         this.patronRepo = patronRepo;
     }
 
-    /**
-     * Checks out a book for a patron.
-     * @param patronId the ID of the patron
-     * @param isbn the ISBN of the book
-     */
     public void checkoutBook(String patronId, String isbn) {
         Optional<Patron> patronOptional = patronRepo.getPatronById(patronId);
         Optional<Book> bookOptional = bookRepo.getBookByIsbn(isbn);
@@ -53,10 +41,6 @@ public class LendingService {
         }
     }
 
-    /**
-     * Returns a book.
-     * @param isbn the ISBN of the book
-     */
     public void returnBook(String isbn) {
         Optional<Book> bookOptional = bookRepo.getBookByIsbn(isbn);
 
