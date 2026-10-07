@@ -13,14 +13,17 @@ import com.ajay.library.model.BookCategory;
 import com.ajay.library.model.Patron;
 import com.ajay.library.repository.BookRepository;
 import com.ajay.library.repository.PatronRepository;
+import com.ajay.library.repository.SqliteBookRepository;
+import com.ajay.library.repository.SqlitePatronRepository;
 import com.ajay.library.service.LibraryService;
 
 public class App {
     private static final Logger log = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) throws Exception {
-        BookRepository bookRepo = new BookRepository();
-        PatronRepository patronRepo = new PatronRepository();
+        String jdbcUrl = "jdbc:sqlite:library.db";
+        BookRepository bookRepo = new SqliteBookRepository(jdbcUrl);
+        PatronRepository patronRepo = new SqlitePatronRepository(jdbcUrl);
         LibraryService service = new LibraryService(bookRepo, patronRepo);
 
         Book b1 = new Book("B1", "Clean Code", "Robert C. Martin", BookCategory.TECHNOLOGY);
