@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.ajay.library.exception.BookNotAvailableException;
+import com.ajay.library.exception.BookNotBorrowedException;
 import com.ajay.library.exception.BorrowLimitExceededException;
 import com.ajay.library.exception.InvalidInputException;
 import com.ajay.library.model.Book;
@@ -86,5 +87,63 @@ public class LibraryServiceTest {
     @Test
     void invalidIdsThrow() {
         assertThrows(InvalidInputException.class, () -> service.borrowBook("X", "Y"));
+    }
+
+    @Test
+    void fineIsZeroExactlyOnDueDate() throws Exception {
+        // Regression guard for the boundary condition in BorrowRecord.calculateFine:
+        // a book returned/checked exactly on its due date is NOT late.
+        Patron patron = new Patron("P1", "Pat");
+        service.registerPatron(patron);
+        Book book = new Book("B1", "T", "A", BookCategory.HISTORY);
+        service.registerBook(book);
+        service.borrowBook("P1", "B1");
+
+        long fineOnDueDate = service.calculatePatronFine("P1", LocalDate.now().plusDays(14));
+        assertEquals(0L, fineOnDueDate, "Returning exactly on the due date should not incur a fine");
+
+        long fineOneDayLate = service.calculatePatronFine("P1", LocalDate.now().plusDays(15));
+        assertEquals(10L, fineOneDayLate, "One day past the due date should incur exactly one day's fine");
+    }
+
+    @Test
+    void returningAnUnborrowedBookThrows() throws Exception {
+        // Regression test for the fix: a patron who never borrowed a book
+        // must not be able to flip it back to available.
+        Patron patron = new Patron("P1", "Pat");
+        service.registerPatron(patron);
+        Book book = new Book("B1", "T", "A", BookCategory.FICTION);
+        service.registerBook(book);
+
+        assertThrows(BookNotBorrowedException.class, () -> service.returnBook("P1", "B1"));
+    }
+
+    @Test
+    void anotherPatronCannotReturnSomeoneElsesBook() throws Exception {
+        Patron borrower = new Patron("P1", "Borrower");
+        Patron stranger = new Patron("P2", "Stranger");
+        service.registerPatron(borrower);
+        service.registerPatron(stranger);
+        Book book = new Book("B1", "T", "A", BookCategory.FICTION);
+        service.registerBook(book);
+
+        service.borrowBook("P1", "B1");
+
+        assertThrows(BookNotBorrowedException.class, () -> service.returnBook("P2", "B1"));
+        assertFalse(book.isAvailable(), "Book must remain on loan after a rejected return attempt");
+    }
+
+    @Test
+    void doubleReturnThrowsOnSecondAttempt() throws Exception {
+        Patron patron = new Patron("P1", "Pat");
+        service.registerPatron(patron);
+        Book book = new Book("B1", "T", "A", BookCategory.FICTION);
+        service.registerBook(book);
+
+        service.borrowBook("P1", "B1");
+        service.returnBook("P1", "B1");
+
+        assertThrows(BookNotBorrowedException.class, () -> service.returnBook("P1", "B1"),
+            "Returning the same book twice should fail the second time - there is no active loan left");
     }
 }
