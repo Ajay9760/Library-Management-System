@@ -2,7 +2,11 @@ package com.ajay.library;
 
 import java.time.LocalDate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.ajay.library.exception.BookNotAvailableException;
+import com.ajay.library.exception.BookNotBorrowedException;
 import com.ajay.library.exception.BorrowLimitExceededException;
 import com.ajay.library.model.Book;
 import com.ajay.library.model.BookCategory;
@@ -12,6 +16,8 @@ import com.ajay.library.repository.PatronRepository;
 import com.ajay.library.service.LibraryService;
 
 public class App {
+    private static final Logger log = LoggerFactory.getLogger(App.class);
+
     public static void main(String[] args) throws Exception {
         BookRepository bookRepo = new BookRepository();
         PatronRepository patronRepo = new PatronRepository();
@@ -27,15 +33,22 @@ public class App {
 
         try {
             service.borrowBook("P1", "B1");
-            System.out.println("Borrowed B1");
+            log.info("Borrowed {}", b1.getTitle());
 
             long fine = service.calculatePatronFine("P1", LocalDate.now().plusDays(20));
-            System.out.println("Fine after 20 days: ₹" + fine);
+            log.info("Fine after 20 days: Rs.{}", fine);
 
             service.returnBook("P1", "B1");
-            System.out.println("Returned B1");
-        } catch (BorrowLimitExceededException | BookNotAvailableException e) {
-            System.err.println("Error: " + e.getMessage());
+            log.info("Returned {}", b1.getTitle());
+
+            // Demonstrates the fix: a patron who never borrowed B2 cannot return it.
+            try {
+                service.returnBook("P1", "B2");
+            } catch (BookNotBorrowedException e) {
+                log.warn("Expected rejection: {}", e.getMessage());
+            }
+        } catch (BorrowLimitExceededException | BookNotAvailableException | BookNotBorrowedException e) {
+            log.error("Library operation failed: {}", e.getMessage());
         }
     }
 }
