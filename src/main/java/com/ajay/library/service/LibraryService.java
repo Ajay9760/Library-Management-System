@@ -3,6 +3,7 @@ package com.ajay.library.service;
 import java.time.LocalDate;
 
 import com.ajay.library.exception.BookNotAvailableException;
+import com.ajay.library.exception.BookNotBorrowedException;
 import com.ajay.library.exception.BorrowLimitExceededException;
 import com.ajay.library.exception.InvalidInputException;
 import com.ajay.library.model.Book;
@@ -36,7 +37,7 @@ public class LibraryService {
         patron.borrowBook(book);
     }
 
-    public void returnBook(String patronId, String bookId) {
+    public void returnBook(String patronId, String bookId) throws BookNotBorrowedException {
         Patron patron = patronRepository.findById(patronId).orElseThrow(() -> new InvalidInputException("Patron not found: " + patronId));
         Book book = bookRepository.findById(bookId).orElseThrow(() -> new InvalidInputException("Book not found: " + bookId));
         patron.returnBook(book);

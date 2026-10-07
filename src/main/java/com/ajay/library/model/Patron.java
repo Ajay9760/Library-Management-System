@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.ajay.library.exception.BookNotAvailableException;
+import com.ajay.library.exception.BookNotBorrowedException;
 import com.ajay.library.exception.BorrowLimitExceededException;
 
 public class Patron {
@@ -40,16 +41,21 @@ public class Patron {
         borrowedBooks.add(BorrowRecord.start(book, LocalDate.now()));
     }
 
-    public void returnBook(Book book) {
+    public void returnBook(Book book) throws BookNotBorrowedException {
         Iterator<BorrowRecord> iterator = borrowedBooks.iterator();
         while (iterator.hasNext()) {
             BorrowRecord record = iterator.next();
             if (record.getBook().equals(book)) {
                 iterator.remove();
-                break;
+                // Only flip the book back to available once we've confirmed
+                // THIS patron actually held it — otherwise a patron who never
+                // borrowed the book could free it from under the real borrower.
+                book.returnBook();
+                return;
             }
         }
-        book.returnBook();
+        throw new BookNotBorrowedException(
+            "Patron " + id + " has no active loan for book " + book.getId());
     }
 
     public long totalOutstandingFines(LocalDate referenceDate) {
