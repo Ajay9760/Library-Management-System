@@ -16,7 +16,7 @@ public class BookRepositoryTest {
 
     @BeforeEach
     void setup() {
-        repository = new BookRepository();
+        repository = new InMemoryBookRepository();
     }
 
     @Test

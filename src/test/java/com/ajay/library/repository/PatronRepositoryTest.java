@@ -15,7 +15,7 @@ public class PatronRepositoryTest {
 
     @BeforeEach
     void setup() {
-        repository = new PatronRepository();
+        repository = new InMemoryPatronRepository();
     }
 
     @Test

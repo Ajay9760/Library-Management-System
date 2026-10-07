@@ -15,6 +15,8 @@ import com.ajay.library.model.Book;
 import com.ajay.library.model.BookCategory;
 import com.ajay.library.model.Patron;
 import com.ajay.library.repository.BookRepository;
+import com.ajay.library.repository.InMemoryBookRepository;
+import com.ajay.library.repository.InMemoryPatronRepository;
 import com.ajay.library.repository.PatronRepository;
 import com.ajay.library.service.LibraryService;
 
@@ -26,8 +28,8 @@ public class LibraryServiceTest {
 
     @BeforeEach
     void setup() {
-        bookRepository = new BookRepository();
-        patronRepository = new PatronRepository();
+        bookRepository = new InMemoryBookRepository();
+        patronRepository = new InMemoryPatronRepository();
         service = new LibraryService(bookRepository, patronRepository);
     }
 

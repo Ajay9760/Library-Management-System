@@ -1,30 +1,22 @@
 package com.ajay.library.repository;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 import com.ajay.library.model.Patron;
 
-public class PatronRepository {
-    private final Map<String, Patron> patrons = new HashMap<>();
+/**
+ * Storage abstraction for {@link Patron} records.
+ * See {@link InMemoryPatronRepository} and {@link SqlitePatronRepository}.
+ */
+public interface PatronRepository {
+    Patron save(Patron patron);
 
-    public Patron save(Patron patron) {
-        patrons.put(patron.getId(), patron);
-        return patron;
-    }
+    Optional<Patron> findById(String id);
 
-    public Optional<Patron> findById(String id) {
-        return Optional.ofNullable(patrons.get(id));
-    }
+    List<Patron> getAllPatrons();
 
-    public List<Patron> getAllPatrons() { // Implemented
-        return new ArrayList<>(patrons.values());
-    }
+    void deleteById(String id);
 
-    public void deleteById(String id) {
-        patrons.remove(id);
-    }
-
-    public void clear() {
-        patrons.clear();
-    }
+    void clear();
 }
